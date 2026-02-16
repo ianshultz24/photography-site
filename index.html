@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bird photography by Ian Shultz. Fine art wildlife and avian photography.">
+  <title>Ian Shultz — Bird Photography</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#" class="nav__logo">Ian Shultz</a>
+      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav__links" id="navLinks">
+        <li><a href="#portfolio">Portfolio</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero" id="hero">
+    <div class="hero__content">
+      <p class="hero__eyebrow">Bird Photography</p>
+      <h1 class="hero__title">Capturing the<br>art of birds</h1>
+      <p class="hero__subtitle">Fine avian photography from the field by Ian Shultz</p>
+      <a href="#portfolio" class="hero__cta">View Portfolio</a>
+    </div>
+    <div class="hero__scroll">
+      <span>Scroll</span>
+      <div class="hero__scroll-line"></div>
+    </div>
+  </header>
+
+  <!-- Portfolio -->
+  <section class="section portfolio" id="portfolio">
+    <div class="container">
+      <div class="section__header">
+        <p class="section__eyebrow">Selected Work</p>
+        <h2 class="section__title">Portfolio</h2>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="portfolio__filters">
+        <button class="portfolio__filter active" data-filter="all">All</button>
+        <button class="portfolio__filter" data-filter="raptors">Raptors</button>
+        <button class="portfolio__filter" data-filter="songbirds">Songbirds</button>
+        <button class="portfolio__filter" data-filter="waterfowl">Waterfowl</button>
+        <button class="portfolio__filter" data-filter="shorebirds">Shorebirds</button>
+      </div>
+
+      <!-- Gallery grid -->
+      <div class="portfolio__grid" id="portfolioGrid">
+
+        <div class="portfolio__item" data-category="raptors">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/_E5A0089.jpg" alt="Snowy Plovers in sand" loading="lazy">
+            <div class="portfolio__overlay">
+              <h3>Snowy Plover</h3>
+              <p>Cambria, CA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio__item portfolio__item--tall" data-category="songbirds">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/7179 - In the Light-2.jpg" alt="Brown Rock Pigeon under a bridge" loading="lazy">
+            <div class="portfolio__overlay">
+              <h3>Rock Pigeon</h3>
+              <p>Golden Gardens, WA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio__item" data-category="waterfowl">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/6752 - Still Morning-2.jpg" alt="Wood Duck on water" loading="lazy">
+            <div class="portfolio__overlay">
+              <h3>Wood Duck</h3>
+              <p>Juanita Bay, WA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio__item" data-category="raptors">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/_E5A9517.jpg" alt="Anna's Hummingbird" loading="lazy">
+            <div class="portfolio__overlay">
+              <h3>Anna's Hummingbird</h3>
+              <p>Yarrow Bay, WA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio__item portfolio__item--wide" data-category="shorebirds">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/2E5A8268.jpg" alt="Bufflehead diving" loading="lazy">
+            <div class="portfolio__overlay">
+              <h3>Bufflehead</h3>
+              <p>Juanita Bay, WA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio__item" data-category="songbirds">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/6808 - Wooded Camouflage-1.jpg" alt="Mourning Dove" loading="lazy">
+            <div class="portfolio__overlay">
+              <h3>Mourning Dove</h3>
+              <p>Chesterfield, MO</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio__item" data-category="waterfowl">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/7502 - Wingspread-2.jpg" alt="Anna's Hummingbird spreading its wings" loading="lazy">
+            <div class="portfolio__overlay">
+              <h3>Anna's Hummingbird</h3>
+              <p>Woodinville, WA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio__item portfolio__item--tall" data-category="raptors">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/_E5A9442.jpg" alt="Anna's Hummingbird sitting on a branch" loading="lazy">
+            <div class="portfolio__overlay">
+              <h3>Anna's Hummingbird</h3>
+              <p>Yarrow Bay, WA</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio__item" data-category="shorebirds">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/_E5A9947.jpg" alt="Sparrow on a branch" loading="lazy">
+            <div class="portfolio__overlay">
+              <h3>Song Sparrow</h3>
+              <p>Cambria, CA</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="section about" id="about">
+    <div class="container">
+      <div class="about__grid">
+        <div class="about__image">
+          <img src="images/about-placeholder.svg" alt="Ian Shultz with camera in the field">
+        </div>
+        <div class="about__content">
+          <p class="section__eyebrow">About</p>
+          <h2 class="section__title">Ian Shultz</h2>
+          <p class="about__text">
+            I'm a bird photographer and student focused on the conservation of threatened
+            species and habitats. My work focuses on capturing simple, peaceful moments in
+            time, like the quiet stillness of dawn and the raw power of flight.
+          </p>
+          <p class="about__text">
+            Every image is the product of patience, fieldcraft, and a deep respect
+            for the natural world. I shoot primarily with long telephoto lenses in
+            natural light, prioritizing authenticity over everything.
+          </p>
+          <div class="about__stats">
+            <div class="about__stat">
+              <span class="about__stat-number">20+</span>
+              <span class="about__stat-label">Species Documented</span>
+            </div>
+            <div class="about__stat">
+              <span class="about__stat-number">2</span>
+              <span class="about__stat-label">Years in the Field</span>
+            </div>
+            <div class="about__stat">
+              <span class="about__stat-number">2+</span>
+              <span class="about__stat-label">National Parks</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="section contact" id="contact">
+    <div class="container">
+      <div class="contact__inner">
+        <div class="section__header">
+          <p class="section__eyebrow">Get in Touch</p>
+          <h2 class="section__title">Contact</h2>
+          <p class="contact__description">
+            Interested in contacting? I'd love to hear from you.
+          </p>
+        </div>
+        <form class="contact__form" id="contactForm">
+          <div class="contact__form-row">
+            <div class="contact__field">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required placeholder="Your name">
+            </div>
+            <div class="contact__field">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required placeholder="your@email.com">
+            </div>
+          </div>
+          <div class="contact__field">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject">
+              <option value="general">General Inquiry</option>
+              <option value="prints">Print Purchase</option>
+              <option value="licensing">Image Licensing</option>
+              <option value="collaboration">Collaboration</option>
+            </select>
+          </div>
+          <div class="contact__field">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="5" required placeholder="Your message..."></textarea>
+          </div>
+          <button type="submit" class="contact__submit">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__brand">
+          <span class="footer__logo">Ian Shultz</span>
+          <p class="footer__tagline">Bird Photography</p>
+        </div>
+        <div class="footer__links">
+          <a href="#portfolio">Portfolio</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </div>
+        <p class="footer__copy">&copy; 2026 Ian Shultz. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox__close" aria-label="Close">&times;</button>
+    <button class="lightbox__prev" aria-label="Previous">&lsaquo;</button>
+    <button class="lightbox__next" aria-label="Next">&rsaquo;</button>
+    <div class="lightbox__content">
+      <img src="" alt="" id="lightboxImg">
+      <div class="lightbox__caption" id="lightboxCaption"></div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
