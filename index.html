@@ -16,20 +16,42 @@
   <nav class="nav" id="nav">
     <div class="nav__inner">
       <a href="#" class="nav__logo">Ian Shultz</a>
-      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu">
-        <span></span>
-        <span></span>
-      </button>
-      <ul class="nav__links" id="navLinks">
-        <li><a href="#portfolio">Portfolio</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
+      <div class="nav__right">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+          <svg class="theme-toggle__sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="theme-toggle__moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <button class="nav__toggle" id="navToggle" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+        </button>
+        <ul class="nav__links" id="navLinks">
+          <li><a href="#portfolio">Portfolio</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
     </div>
   </nav>
 
   <!-- Hero -->
   <header class="hero" id="hero">
+    <div class="hero__bg" id="heroBg">
+      <img src="Portfolio/2E5A8268.jpg" alt="" aria-hidden="true">
+    </div>
+    <div class="hero__overlay"></div>
     <div class="hero__content">
       <p class="hero__eyebrow">Bird Photography</p>
       <h1 class="hero__title">Capturing the<br>art of birds</h1>
@@ -50,19 +72,10 @@
         <h2 class="section__title">Portfolio</h2>
       </div>
 
-      <!-- Filter tabs -->
-      <div class="portfolio__filters">
-        <button class="portfolio__filter active" data-filter="all">All</button>
-        <button class="portfolio__filter" data-filter="raptors">Raptors</button>
-        <button class="portfolio__filter" data-filter="songbirds">Songbirds</button>
-        <button class="portfolio__filter" data-filter="waterfowl">Waterfowl</button>
-        <button class="portfolio__filter" data-filter="shorebirds">Shorebirds</button>
-      </div>
-
       <!-- Gallery grid -->
       <div class="portfolio__grid" id="portfolioGrid">
 
-        <div class="portfolio__item" data-category="raptors">
+        <div class="portfolio__item">
           <div class="portfolio__image-wrap">
             <img src="Portfolio/_E5A0089.jpg" alt="Snowy Plovers in sand" loading="lazy">
             <div class="portfolio__overlay">
@@ -72,7 +85,7 @@
           </div>
         </div>
 
-        <div class="portfolio__item portfolio__item--tall" data-category="songbirds">
+        <div class="portfolio__item portfolio__item--tall">
           <div class="portfolio__image-wrap">
             <img src="Portfolio/7179 - In the Light-2.jpg" alt="Brown Rock Pigeon under a bridge" loading="lazy">
             <div class="portfolio__overlay">
@@ -82,7 +95,7 @@
           </div>
         </div>
 
-        <div class="portfolio__item" data-category="waterfowl">
+        <div class="portfolio__item">
           <div class="portfolio__image-wrap">
             <img src="Portfolio/6752 - Still Morning-2.jpg" alt="Wood Duck on water" loading="lazy">
             <div class="portfolio__overlay">
@@ -92,7 +105,7 @@
           </div>
         </div>
 
-        <div class="portfolio__item" data-category="raptors">
+        <div class="portfolio__item">
           <div class="portfolio__image-wrap">
             <img src="Portfolio/_E5A9517.jpg" alt="Anna's Hummingbird" loading="lazy">
             <div class="portfolio__overlay">
@@ -102,7 +115,7 @@
           </div>
         </div>
 
-        <div class="portfolio__item portfolio__item--wide" data-category="shorebirds">
+        <div class="portfolio__item portfolio__item--wide">
           <div class="portfolio__image-wrap">
             <img src="Portfolio/2E5A8268.jpg" alt="Bufflehead diving" loading="lazy">
             <div class="portfolio__overlay">
@@ -112,7 +125,7 @@
           </div>
         </div>
 
-        <div class="portfolio__item" data-category="songbirds">
+        <div class="portfolio__item">
           <div class="portfolio__image-wrap">
             <img src="Portfolio/6808 - Wooded Camouflage-1.jpg" alt="Mourning Dove" loading="lazy">
             <div class="portfolio__overlay">
@@ -122,7 +135,7 @@
           </div>
         </div>
 
-        <div class="portfolio__item" data-category="waterfowl">
+        <div class="portfolio__item">
           <div class="portfolio__image-wrap">
             <img src="Portfolio/7502 - Wingspread-2.jpg" alt="Anna's Hummingbird spreading its wings" loading="lazy">
             <div class="portfolio__overlay">
@@ -132,7 +145,7 @@
           </div>
         </div>
 
-        <div class="portfolio__item portfolio__item--tall" data-category="raptors">
+        <div class="portfolio__item portfolio__item--tall">
           <div class="portfolio__image-wrap">
             <img src="Portfolio/_E5A9442.jpg" alt="Anna's Hummingbird sitting on a branch" loading="lazy">
             <div class="portfolio__overlay">
@@ -142,7 +155,7 @@
           </div>
         </div>
 
-        <div class="portfolio__item" data-category="shorebirds">
+        <div class="portfolio__item">
           <div class="portfolio__image-wrap">
             <img src="Portfolio/_E5A9947.jpg" alt="Sparrow on a branch" loading="lazy">
             <div class="portfolio__overlay">
@@ -206,7 +219,11 @@
             Interested in contacting? I'd love to hear from you.
           </p>
         </div>
-        <form class="contact__form" id="contactForm">
+        <form class="contact__form" id="contactForm" action="https://formsubmit.co/ianshultz24@gmail.com" method="POST">
+          <input type="hidden" name="_subject" value="New message from your photography website">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_next" value="">
+          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
           <div class="contact__form-row">
             <div class="contact__field">
               <label for="name">Name</label>
@@ -220,10 +237,10 @@
           <div class="contact__field">
             <label for="subject">Subject</label>
             <select id="subject" name="subject">
-              <option value="general">General Inquiry</option>
-              <option value="prints">Print Purchase</option>
-              <option value="licensing">Image Licensing</option>
-              <option value="collaboration">Collaboration</option>
+              <option value="General Inquiry">General Inquiry</option>
+              <option value="Feedback">Feedback</option>
+              <option value="Collaboration">Collaboration</option>
+              <option value="Other">Other</option>
             </select>
           </div>
           <div class="contact__field">
