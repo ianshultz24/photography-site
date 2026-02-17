@@ -5,6 +5,11 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // --- Image protection: block right-click on images ---
+  document.addEventListener('contextmenu', (e) => {
+    if (e.target.tagName === 'IMG') e.preventDefault();
+  });
+
   const nav = document.getElementById('nav');
   const hero = document.getElementById('hero');
   const heroBg = document.getElementById('heroBg');
@@ -176,6 +181,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const top = target.getBoundingClientRect().top + window.scrollY - offset;
       window.scrollTo({ top, behavior: 'smooth' });
     });
+  });
+
+});
+
   });
 
 });
