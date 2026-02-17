@@ -4,6 +4,19 @@
    with dark mode support
    ============================================ */
 
+/* --- Image protection --- */
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+.portfolio__image-wrap,
+.hero__bg,
+.lightbox__content {
+  pointer-events: auto;
+}
+
 /* --- Reset & Base --- */
 *, *::before, *::after {
   margin: 0;
