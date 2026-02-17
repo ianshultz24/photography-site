@@ -166,13 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'ArrowLeft') prevImage();
   });
 
-  // --- Contact form: set _next redirect to current page ---
-  const contactForm = document.getElementById('contactForm');
-  const nextInput = contactForm.querySelector('input[name="_next"]');
-  if (nextInput) {
-    nextInput.value = window.location.href;
-  }
-
   // --- Smooth anchor offset for fixed nav ---
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', (e) => {
