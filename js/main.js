@@ -5,9 +5,9 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // --- Image protection: block right-click on images ---
+  // --- Image protection: block right-click site-wide ---
   document.addEventListener('contextmenu', (e) => {
-    if (e.target.tagName === 'IMG') e.preventDefault();
+    e.preventDefault();
   });
 
   const nav = document.getElementById('nav');
