@@ -5,16 +5,12 @@
    ============================================ */
 
 /* --- Image protection --- */
-img {
+.portfolio__image-wrap img,
+.hero__bg img,
+.lightbox__content img {
   -webkit-user-drag: none;
   user-select: none;
   pointer-events: none;
-}
-
-.portfolio__image-wrap,
-.hero__bg,
-.lightbox__content {
-  pointer-events: auto;
 }
 
 /* --- Reset & Base --- */
