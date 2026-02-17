@@ -5,12 +5,66 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // --- Navigation scroll effect ---
   const nav = document.getElementById('nav');
-  const handleScroll = () => {
-    nav.classList.toggle('nav--scrolled', window.scrollY > 50);
-  };
-  window.addEventListener('scroll', handleScroll, { passive: true });
+  const hero = document.getElementById('hero');
+  const heroBg = document.getElementById('heroBg');
+
+  // --- Dark mode toggle ---
+  const themeToggle = document.getElementById('themeToggle');
+
+  function getStoredTheme() {
+    try { return localStorage.getItem('theme'); } catch { return null; }
+  }
+
+  function storeTheme(theme) {
+    try { localStorage.setItem('theme', theme); } catch { /* storage unavailable */ }
+  }
+
+  const savedTheme = getStoredTheme();
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    storeTheme(next);
+  });
+
+  // --- Navigation: scroll effect + hero transparency ---
+  // Cache hero height to avoid layout thrashing on every scroll frame
+  let cachedHeroHeight = hero.offsetHeight;
+  window.addEventListener('resize', () => { cachedHeroHeight = hero.offsetHeight; }, { passive: true });
+
+  function updateNav() {
+    const scrollY = window.scrollY;
+    nav.classList.toggle('nav--scrolled', scrollY > 50);
+    nav.classList.toggle('nav--hero-visible', scrollY < cachedHeroHeight - 100);
+  }
+  updateNav();
+
+  // --- Parallax hero background ---
+  function updateParallax() {
+    if (window.scrollY < cachedHeroHeight) {
+      heroBg.style.transform = `translate3d(0, ${window.scrollY * 0.4}px, 0)`;
+    }
+  }
+
+  // Combined scroll handler with rAF throttle
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        updateNav();
+        updateParallax();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
 
   // --- Mobile menu toggle ---
   const navToggle = document.getElementById('navToggle');
@@ -30,68 +84,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- Portfolio filter ---
-  const filterButtons = document.querySelectorAll('.portfolio__filter');
+  // --- Scroll reveal (Intersection Observer) ---
   const portfolioItems = document.querySelectorAll('.portfolio__item');
 
-  filterButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      const filter = btn.dataset.filter;
-
-      portfolioItems.forEach(item => {
-        if (filter === 'all' || item.dataset.category === filter) {
-          item.classList.remove('hidden');
-          // Re-trigger visibility animation
-          item.classList.remove('visible');
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              item.classList.add('visible');
-            });
-          });
-        } else {
-          item.classList.add('hidden');
-          item.classList.remove('visible');
-        }
-      });
-    });
-  });
-
-  // --- Scroll reveal (Intersection Observer) ---
-  const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -40px 0px'
-  };
-
-  const observer = new IntersectionObserver((entries) => {
+  const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
+        revealObserver.unobserve(entry.target);
       }
     });
-  }, observerOptions);
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
+  // Use CSS transition-delay via custom property instead of inline style.transition
+  // (avoids per-element style recalculation)
   portfolioItems.forEach((item, index) => {
-    item.style.transitionDelay = `${index * 0.08}s`;
-    observer.observe(item);
+    item.style.setProperty('--reveal-delay', `${index * 0.08}s`);
+    revealObserver.observe(item);
+  });
+
+  // Section headers, about blocks, contact
+  document.querySelectorAll('.section__header, .about__content, .about__image, .contact__inner').forEach(el => {
+    revealObserver.observe(el);
   });
 
   // --- Lightbox ---
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightboxImg');
   const lightboxCaption = document.getElementById('lightboxCaption');
+  const items = Array.from(portfolioItems);
   let currentIndex = 0;
-  let visibleItems = [];
-
-  function getVisibleItems() {
-    return Array.from(portfolioItems).filter(item => !item.classList.contains('hidden'));
-  }
 
   function openLightbox(index) {
-    visibleItems = getVisibleItems();
     currentIndex = index;
     updateLightbox();
     lightbox.classList.add('active');
@@ -104,33 +128,27 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateLightbox() {
-    const item = visibleItems[currentIndex];
+    const item = items[currentIndex];
     const img = item.querySelector('img');
     const overlay = item.querySelector('.portfolio__overlay');
-    const title = overlay.querySelector('h3').textContent;
-    const location = overlay.querySelector('p').textContent;
 
     lightboxImg.src = img.src;
     lightboxImg.alt = img.alt;
-    lightboxCaption.textContent = `${title} — ${location}`;
+    lightboxCaption.textContent = `${overlay.querySelector('h3').textContent} — ${overlay.querySelector('p').textContent}`;
   }
 
   function nextImage() {
-    currentIndex = (currentIndex + 1) % visibleItems.length;
+    currentIndex = (currentIndex + 1) % items.length;
     updateLightbox();
   }
 
   function prevImage() {
-    currentIndex = (currentIndex - 1 + visibleItems.length) % visibleItems.length;
+    currentIndex = (currentIndex - 1 + items.length) % items.length;
     updateLightbox();
   }
 
-  portfolioItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const visible = getVisibleItems();
-      const index = visible.indexOf(item);
-      if (index !== -1) openLightbox(index);
-    });
+  items.forEach((item, i) => {
+    item.addEventListener('click', () => openLightbox(i));
   });
 
   document.querySelector('.lightbox__close').addEventListener('click', closeLightbox);
@@ -148,32 +166,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'ArrowLeft') prevImage();
   });
 
-  // --- Contact form ---
+  // --- Contact form: set _next redirect to current page ---
   const contactForm = document.getElementById('contactForm');
-  contactForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const formData = new FormData(contactForm);
-    const data = Object.fromEntries(formData);
-
-    // Replace this with your actual form handler (Formspree, Netlify Forms, etc.)
-    console.log('Form submitted:', data);
-
-    const btn = contactForm.querySelector('.contact__submit');
-    const originalText = btn.textContent;
-    btn.textContent = 'Message Sent!';
-    btn.style.background = '#2d6a4f';
-    btn.style.borderColor = '#2d6a4f';
-    btn.style.color = '#fff';
-
-    setTimeout(() => {
-      btn.textContent = originalText;
-      btn.style.background = '';
-      btn.style.borderColor = '';
-      btn.style.color = '';
-      contactForm.reset();
-    }, 3000);
-  });
+  const nextInput = contactForm.querySelector('input[name="_next"]');
+  if (nextInput) {
+    nextInput.value = window.location.href;
+  }
 
   // --- Smooth anchor offset for fixed nav ---
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
