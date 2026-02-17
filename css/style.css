@@ -1,6 +1,7 @@
 /* ============================================
    Ian Shultz — Bird Photography
    Clean, modern, finance-inspired aesthetic
+   with dark mode support
    ============================================ */
 
 /* --- Reset & Base --- */
@@ -11,16 +12,19 @@
 }
 
 :root {
+  /* Light mode (default) */
   --color-bg: #fafafa;
   --color-surface: #ffffff;
   --color-text: #1a1a1a;
   --color-text-secondary: #6b6b6b;
   --color-text-muted: #999999;
   --color-accent: #2c2c2c;
-  --color-accent-hover: #000000;
   --color-border: #e8e8e8;
   --color-border-light: #f0f0f0;
-  --color-overlay: rgba(0, 0, 0, 0.85);
+  --color-overlay: rgba(0, 0, 0, 0.88);
+  --color-nav-bg: rgba(250, 250, 250, 0.92);
+  --color-nav-mobile-bg: rgba(250, 250, 250, 0.98);
+  --color-card-shadow: rgba(0, 0, 0, 0.06);
 
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
@@ -31,6 +35,22 @@
   --transition-fast: 0.2s ease;
   --transition-base: 0.35s ease;
   --transition-slow: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dark mode */
+[data-theme="dark"] {
+  --color-bg: #0e0e0e;
+  --color-surface: #161616;
+  --color-text: #e8e8e8;
+  --color-text-secondary: #a0a0a0;
+  --color-text-muted: #666666;
+  --color-accent: #e0e0e0;
+  --color-border: #2a2a2a;
+  --color-border-light: #1e1e1e;
+  --color-overlay: rgba(0, 0, 0, 0.92);
+  --color-nav-bg: rgba(14, 14, 14, 0.92);
+  --color-nav-mobile-bg: rgba(14, 14, 14, 0.98);
+  --color-card-shadow: rgba(0, 0, 0, 0.3);
 }
 
 html {
@@ -45,6 +65,7 @@ body {
   background-color: var(--color-bg);
   line-height: 1.6;
   overflow-x: hidden;
+  transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 img {
@@ -71,6 +92,35 @@ button {
   padding: 0 var(--container-padding);
 }
 
+/* --- Theme Toggle --- */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.theme-toggle:hover {
+  color: var(--color-text);
+  background: var(--color-border-light);
+}
+
+.theme-toggle__moon {
+  display: none;
+}
+
+[data-theme="dark"] .theme-toggle__sun {
+  display: none;
+}
+
+[data-theme="dark"] .theme-toggle__moon {
+  display: block;
+}
+
 /* --- Navigation --- */
 .nav {
   position: fixed;
@@ -78,7 +128,7 @@ button {
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgba(250, 250, 250, 0.92);
+  background: var(--color-nav-bg);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid transparent;
@@ -87,6 +137,36 @@ button {
 
 .nav--scrolled {
   border-bottom-color: var(--color-border);
+}
+
+/* On the hero, make the nav transparent so it blends with the photo */
+.nav--hero-visible {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.nav--hero-visible .nav__logo,
+.nav--hero-visible .nav__links a,
+.nav--hero-visible .theme-toggle {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.nav--hero-visible .nav__links a:hover,
+.nav--hero-visible .theme-toggle:hover {
+  color: #fff;
+}
+
+.nav--hero-visible .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.nav--hero-visible .nav__toggle span {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.nav--hero-visible .nav__links a::after {
+  background: #fff;
 }
 
 .nav__inner {
@@ -99,12 +179,19 @@ button {
   height: 72px;
 }
 
+.nav__right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .nav__logo {
   font-family: var(--font-serif);
   font-size: 1.25rem;
   font-weight: 500;
   letter-spacing: -0.02em;
   color: var(--color-text);
+  transition: color var(--transition-fast);
 }
 
 .nav__links {
@@ -155,7 +242,7 @@ button {
   width: 100%;
   height: 1.5px;
   background: var(--color-text);
-  transition: transform var(--transition-base), opacity var(--transition-fast);
+  transition: transform var(--transition-base), opacity var(--transition-fast), background var(--transition-fast);
 }
 
 .nav__toggle.active span:first-child {
@@ -171,27 +258,44 @@ button {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
   position: relative;
-  background: linear-gradient(165deg, #f8f8f8 0%, #eeeeee 50%, #e0e0e0 100%);
   overflow: hidden;
 }
 
-.hero::before {
-  content: '';
+.hero__bg {
   position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 80%;
-  height: 200%;
-  background: radial-gradient(ellipse, rgba(200,200,200,0.3) 0%, transparent 70%);
-  pointer-events: none;
+  inset: 0;
+  z-index: 0;
+  will-change: transform;
+}
+
+.hero__bg img {
+  width: 100%;
+  height: 120%;
+  object-fit: cover;
+  object-position: center 40%;
+}
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* Left-side gradient so text is readable over the water, bird visible on right */
+  background:
+    linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.08) 70%, transparent 100%),
+    linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 40%);
 }
 
 .hero__content {
-  text-align: center;
-  z-index: 1;
+  position: relative;
+  z-index: 2;
+  text-align: left;
+  width: 100%;
+  max-width: 680px;
   padding: 0 var(--container-padding);
+  padding-left: max(var(--container-padding), 8vw);
+  margin: 0;
+  margin-left: max(var(--container-padding), 8vw);
 }
 
 .hero__eyebrow {
@@ -199,7 +303,7 @@ button {
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.7);
   margin-bottom: 24px;
   opacity: 0;
   transform: translateY(20px);
@@ -212,7 +316,7 @@ button {
   font-weight: 400;
   line-height: 1.1;
   letter-spacing: -0.03em;
-  color: var(--color-text);
+  color: #ffffff;
   margin-bottom: 24px;
   opacity: 0;
   transform: translateY(30px);
@@ -222,7 +326,7 @@ button {
 .hero__subtitle {
   font-size: 1.125rem;
   font-weight: 300;
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.65);
   margin-bottom: 48px;
   opacity: 0;
   transform: translateY(20px);
@@ -236,18 +340,18 @@ button {
   font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-surface);
-  background: var(--color-accent);
-  border: 1px solid var(--color-accent);
-  transition: background var(--transition-base), color var(--transition-base);
+  color: #ffffff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: background var(--transition-base), border-color var(--transition-base);
   opacity: 0;
   transform: translateY(20px);
   animation: fadeUp 0.8s ease forwards 0.8s;
 }
 
 .hero__cta:hover {
-  background: transparent;
-  color: var(--color-text);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.8);
 }
 
 .hero__scroll {
@@ -259,6 +363,7 @@ button {
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  z-index: 2;
   opacity: 0;
   animation: fadeUp 0.8s ease forwards 1.2s;
 }
@@ -267,13 +372,13 @@ button {
   font-size: 0.6875rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .hero__scroll-line {
   width: 1px;
   height: 48px;
-  background: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.4);
   animation: scrollPulse 2s ease-in-out infinite;
 }
 
@@ -315,40 +420,34 @@ button {
   color: var(--color-text);
 }
 
+/* Fade-in for sections */
+.section__header,
+.about__content,
+.about__image,
+.contact__inner {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.section__header.visible,
+.about__content.visible,
+.about__image.visible,
+.contact__inner.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* --- Portfolio --- */
 .portfolio {
   background: var(--color-surface);
-}
-
-.portfolio__filters {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 48px;
-  flex-wrap: wrap;
-}
-
-.portfolio__filter {
-  padding: 8px 20px;
-  font-size: 0.8125rem;
-  font-weight: 400;
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
-  background: transparent;
-  transition: all var(--transition-fast);
-  letter-spacing: 0.02em;
-}
-
-.portfolio__filter:hover,
-.portfolio__filter.active {
-  color: var(--color-surface);
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+  transition: background-color 0.4s ease;
 }
 
 .portfolio__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 32px;
 }
 
 .portfolio__item {
@@ -357,6 +456,17 @@ button {
   background: var(--color-border-light);
   aspect-ratio: 4 / 3;
   cursor: pointer;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px var(--color-card-shadow);
+}
+
+.portfolio__item:hover {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+[data-theme="dark"] .portfolio__item:hover {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
 }
 
 .portfolio__item--tall {
@@ -393,7 +503,7 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 24px;
+  padding: 28px;
   opacity: 0;
   transition: opacity var(--transition-base);
 }
@@ -416,11 +526,13 @@ button {
   font-weight: 300;
 }
 
-/* Fade-in on scroll */
+/* Fade-in on scroll — uses --reveal-delay set by JS to avoid inline style recalculation */
 .portfolio__item {
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.6s ease var(--reveal-delay, 0s),
+              transform 0.6s ease var(--reveal-delay, 0s),
+              box-shadow var(--transition-base);
 }
 
 .portfolio__item.visible {
@@ -428,13 +540,10 @@ button {
   transform: translateY(0);
 }
 
-.portfolio__item.hidden {
-  display: none;
-}
-
 /* --- About --- */
 .about {
   background: var(--color-bg);
+  transition: background-color 0.4s ease;
 }
 
 .about__grid {
@@ -448,6 +557,7 @@ button {
   aspect-ratio: 3 / 4;
   overflow: hidden;
   background: var(--color-border-light);
+  border-radius: 4px;
 }
 
 .about__image img {
@@ -495,6 +605,7 @@ button {
 /* --- Contact --- */
 .contact {
   background: var(--color-surface);
+  transition: background-color 0.4s ease;
 }
 
 .contact__inner {
@@ -543,9 +654,10 @@ button {
   font-size: 0.9375rem;
   padding: 14px 16px;
   border: 1px solid var(--color-border);
+  border-radius: 4px;
   background: var(--color-bg);
   color: var(--color-text);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), background-color 0.4s ease;
   outline: none;
   resize: vertical;
 }
@@ -571,7 +683,8 @@ button {
   color: var(--color-surface);
   background: var(--color-accent);
   border: 1px solid var(--color-accent);
-  transition: all var(--transition-base);
+  border-radius: 4px;
+  transition: background var(--transition-base), color var(--transition-base), border-color var(--transition-base);
   cursor: pointer;
 }
 
@@ -585,6 +698,7 @@ button {
   padding: 60px 0;
   border-top: 1px solid var(--color-border);
   background: var(--color-bg);
+  transition: background-color 0.4s ease;
 }
 
 .footer__inner {
@@ -691,6 +805,7 @@ button {
   max-width: 100%;
   max-height: 80vh;
   object-fit: contain;
+  border-radius: 2px;
 }
 
 .lightbox__caption {
@@ -704,6 +819,7 @@ button {
 @media (max-width: 1024px) {
   .portfolio__grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
   }
 
   .about__grid {
@@ -713,11 +829,19 @@ button {
   .about__stats {
     gap: 32px;
   }
+
+  .hero__content {
+    margin-left: max(var(--container-padding), 5vw);
+  }
 }
 
 @media (max-width: 768px) {
   :root {
     --container-padding: 20px;
+  }
+
+  .nav__right {
+    gap: 8px;
   }
 
   .nav__links {
@@ -726,7 +850,7 @@ button {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(250, 250, 250, 0.98);
+    background: var(--color-nav-mobile-bg);
     backdrop-filter: blur(20px);
     flex-direction: column;
     align-items: center;
@@ -746,6 +870,11 @@ button {
     font-size: 1.25rem;
   }
 
+  /* Override hero-visible link colors inside active mobile menu */
+  .nav--hero-visible .nav__links.active a {
+    color: var(--color-text-secondary);
+  }
+
   .nav__toggle {
     display: flex;
     z-index: 101;
@@ -757,6 +886,7 @@ button {
 
   .portfolio__grid {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
 
   .portfolio__item--wide {
@@ -766,6 +896,18 @@ button {
   .portfolio__item--tall {
     grid-row: span 1;
     aspect-ratio: 4 / 3;
+  }
+
+  .hero__overlay {
+    background:
+      linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.5) 100%);
+  }
+
+  .hero__content {
+    text-align: center;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 var(--container-padding);
   }
 
   .about__grid {
@@ -804,14 +946,5 @@ button {
   .about__stats {
     flex-direction: column;
     gap: 20px;
-  }
-
-  .portfolio__filters {
-    gap: 6px;
-  }
-
-  .portfolio__filter {
-    padding: 6px 14px;
-    font-size: 0.75rem;
   }
 }
