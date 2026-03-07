@@ -60,7 +60,10 @@ async function incrementLike(photoId) {
 }
 
 async function decrementLike(photoId) {
-  const { data, error } = await _supabase.rpc('decrement_likes', { p_photo_id: photoId });
+  const { data, error } = await _supabase.rpc('decrement_likes', {
+    p_photo_id: photoId,
+    p_visitor_id: getVisitorId()
+  });
   if (error) {
     const current = countCache[photoId] ?? 1;
     countCache[photoId] = Math.max(current - 1, 0);
