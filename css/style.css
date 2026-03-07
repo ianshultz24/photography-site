@@ -818,10 +818,68 @@ button {
 }
 
 .lightbox__caption {
-  margin-top: 16px;
-  text-align: center;
+  text-align: left;
   color: rgba(255,255,255,0.8);
   font-size: 0.875rem;
+}
+
+/* --- Like Button (lightbox) --- */
+.lightbox__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.lightbox__caption {
+  margin-top: 0;
+}
+
+.like-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+
+.like-btn--liked {
+  color: #e05555;
+  border-color: rgba(224, 85, 85, 0.5);
+  background: rgba(224, 85, 85, 0.1);
+}
+
+.like-btn:hover:not(.like-btn--liked):not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.like-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.like-btn__heart {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.like-btn__count {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 /* --- Responsive --- */

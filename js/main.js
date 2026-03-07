@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lightboxImg.src = img.src;
     lightboxImg.alt = img.alt;
     lightboxCaption.textContent = `${overlay.querySelector('h3').textContent} — ${overlay.querySelector('p').textContent}`;
+    lightbox.dataset.currentPhotoId = item.dataset.photoId || '';
   }
 
   function nextImage() {
