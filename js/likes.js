@@ -51,13 +51,24 @@ async function incrementLike(photoId) {
     p_visitor_id: getVisitorId()
   });
   if (error) {
-    // Optimistic fallback if RPC isn't set up yet
     const current = countCache[photoId] ?? 0;
     countCache[photoId] = current + 1;
     return countCache[photoId];
   }
   countCache[photoId] = data;
   return data;
+}
+
+async function decrementLike(photoId) {
+  const { data, error } = await _supabase.rpc('decrement_likes', { p_photo_id: photoId });
+  if (error) {
+    const current = countCache[photoId] ?? 1;
+    countCache[photoId] = Math.max(current - 1, 0);
+    return countCache[photoId];
+  }
+  const count = data ?? 0;
+  countCache[photoId] = count;
+  return count;
 }
 
 function clearLikedIfReset(photoId, btn) {
@@ -109,21 +120,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }).observe(lightbox, { attributes: true });
 
-  // Like button click handler
+  // Like / unlike toggle
   btn.addEventListener('click', async () => {
     const photoId = btn.dataset.photoId;
     if (!photoId) return;
 
     const liked = getLikedSet();
-    if (liked.has(photoId)) return; // already liked — no double-liking
-
     btn.disabled = true;
-    const newCount = await incrementLike(photoId);
-    liked.add(photoId);
-    saveLikedSet(liked);
-    btn.querySelector('.like-btn__count').textContent = newCount;
-    btn.classList.add('like-btn--liked');
-    btn.setAttribute('aria-pressed', 'true');
+
+    if (liked.has(photoId)) {
+      // Unlike
+      const newCount = await decrementLike(photoId);
+      liked.delete(photoId);
+      saveLikedSet(liked);
+      btn.querySelector('.like-btn__count').textContent = newCount;
+      btn.classList.remove('like-btn--liked');
+      btn.setAttribute('aria-pressed', 'false');
+    } else {
+      // Like
+      const newCount = await incrementLike(photoId);
+      liked.add(photoId);
+      saveLikedSet(liked);
+      btn.querySelector('.like-btn__count').textContent = newCount;
+      btn.classList.add('like-btn--liked');
+      btn.setAttribute('aria-pressed', 'true');
+    }
+
     btn.disabled = false;
   });
 });

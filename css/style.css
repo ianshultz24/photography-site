@@ -860,6 +860,12 @@ button {
   background: rgba(224, 85, 85, 0.1);
 }
 
+.like-btn--liked:hover:not(:disabled) {
+  background: rgba(224, 85, 85, 0.22);
+  border-color: rgba(224, 85, 85, 0.75);
+  color: #c94444;
+}
+
 .like-btn:hover:not(.like-btn--liked):not(:disabled) {
   background: rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.9);
