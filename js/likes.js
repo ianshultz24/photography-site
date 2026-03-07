@@ -39,8 +39,17 @@ async function getLikes(photoId) {
 //     do update set likes = photo_likes.likes + 1
 //     returning likes;
 //   $$;
+function getVisitorId() {
+  let id = localStorage.getItem('visitor_id');
+  if (!id) { id = crypto.randomUUID(); localStorage.setItem('visitor_id', id); }
+  return id;
+}
+
 async function incrementLike(photoId) {
-  const { data, error } = await _supabase.rpc('increment_likes', { p_photo_id: photoId });
+  const { data, error } = await _supabase.rpc('increment_likes', {
+    p_photo_id: photoId,
+    p_visitor_id: getVisitorId()
+  });
   if (error) {
     // Optimistic fallback if RPC isn't set up yet
     const current = countCache[photoId] ?? 0;
@@ -49,6 +58,16 @@ async function incrementLike(photoId) {
   }
   countCache[photoId] = data;
   return data;
+}
+
+function clearLikedIfReset(photoId, btn) {
+  const liked = getLikedSet();
+  if (liked.has(photoId)) {
+    liked.delete(photoId);
+    saveLikedSet(liked);
+    btn.classList.remove('like-btn--liked');
+    btn.setAttribute('aria-pressed', 'false');
+  }
 }
 
 function updateLightboxLike(photoId) {
@@ -61,14 +80,16 @@ function updateLightboxLike(photoId) {
   btn.setAttribute('aria-pressed', String(isLiked));
 
   if (countCache[photoId] !== undefined) {
-    btn.querySelector('.like-btn__count').textContent = countCache[photoId];
+    const count = countCache[photoId];
+    btn.querySelector('.like-btn__count').textContent = count;
+    // If DB was reset to 0, clear the local liked state so button is clickable again
+    if (count === 0) clearLikedIfReset(photoId, btn);
   } else {
     btn.querySelector('.like-btn__count').textContent = '—';
     getLikes(photoId).then(count => {
-      // Only update if user hasn't navigated to a different photo
-      if (btn.dataset.photoId === photoId) {
-        btn.querySelector('.like-btn__count').textContent = count;
-      }
+      if (btn.dataset.photoId !== photoId) return;
+      btn.querySelector('.like-btn__count').textContent = count;
+      if (count === 0) clearLikedIfReset(photoId, btn);
     });
   }
 }
