@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio Admin — Ian Shultz Photography</title>
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0e0e0e;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --border: #2a2a2a;
+  --text: #e8e8e8;
+  --text2: #a0a0a0;
+  --accent: #4a9eff;
+  --accent-hover: #3a8eef;
+  --danger: #e05555;
+  --danger-hover: #c04444;
+  --success: #4caf50;
+  --radius: 6px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --serif: 'Playfair Display', Georgia, serif;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── Layout ── */
+.app { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+.app__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0 24px; border-bottom: 1px solid var(--border); margin-bottom: 32px;
+}
+.app__title { font-size: 1.25rem; font-weight: 500; }
+.app__title span { color: var(--text2); font-weight: 300; }
+.app__actions { display: flex; gap: 10px; align-items: center; }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 4px; margin-bottom: 32px; }
+.tab {
+  padding: 10px 20px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text2); cursor: pointer;
+  font-size: 0.875rem; font-family: var(--font); transition: all 0.15s;
+}
+.tab:hover { color: var(--text); border-color: #444; }
+.tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 18px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); color: var(--text); cursor: pointer;
+  font-size: 0.875rem; font-family: var(--font); transition: all 0.15s;
+}
+.btn:hover { background: var(--surface2); border-color: #444; }
+.btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn--primary:hover { background: var(--accent-hover); }
+.btn--danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn--danger:hover { background: var(--danger-hover); }
+.btn--success { background: var(--success); border-color: var(--success); color: #fff; }
+.btn--success:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Drop zone ── */
+.dropzone {
+  border: 2px dashed var(--border); border-radius: 12px; padding: 60px 40px;
+  text-align: center; cursor: pointer; transition: all 0.2s;
+  background: var(--surface);
+}
+.dropzone:hover, .dropzone.dragover {
+  border-color: var(--accent); background: rgba(74, 158, 255, 0.04);
+}
+.dropzone__icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5; }
+.dropzone__text { font-size: 1rem; color: var(--text2); margin-bottom: 4px; }
+.dropzone__sub { font-size: 0.8rem; color: #666; }
+.dropzone input { display: none; }
+
+/* ── Upload queue ── */
+.upload-queue { margin-top: 24px; }
+.upload-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 16px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 8px;
+}
+.upload-item__thumb {
+  width: 60px; height: 45px; object-fit: cover; border-radius: 4px; background: #222;
+}
+.upload-item__info { flex: 1; min-width: 0; }
+.upload-item__name { font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.upload-item__size { font-size: 0.75rem; color: var(--text2); }
+.upload-item__progress {
+  width: 100%; height: 3px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden;
+}
+.upload-item__bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; width: 0; }
+.upload-item__status { font-size: 0.75rem; color: var(--success); white-space: nowrap; }
+
+/* ── Gallery grid (management) ── */
+.gallery-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+.gallery-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; position: relative; transition: box-shadow 0.15s, transform 0.15s;
+}
+.gallery-card.dragging { opacity: 0.4; transform: scale(0.97); }
+.gallery-card.drag-over { box-shadow: 0 0 0 2px var(--accent); }
+.gallery-card__drag-handle {
+  position: relative; cursor: grab; user-select: none;
+}
+.gallery-card__drag-handle:active { cursor: grabbing; }
+.gallery-card__drag-hint {
+  position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6);
+  color: #fff; font-size: 0.6rem; padding: 2px 8px; border-radius: 3px;
+  opacity: 0; transition: opacity 0.2s; pointer-events: none;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.gallery-card__drag-handle:hover .gallery-card__drag-hint { opacity: 1; }
+.gallery-card__img {
+  width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block; background: #111;
+  pointer-events: none;
+}
+.gallery-card__body { padding: 12px; }
+.gallery-card__field { margin-bottom: 8px; }
+.gallery-card__field label {
+  display: block; font-size: 0.7rem; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3px;
+}
+.gallery-card__field input, .gallery-card__field select {
+  width: 100%; padding: 6px 8px; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-size: 0.8rem; font-family: var(--font);
+  user-select: text; cursor: text;
+}
+.gallery-card__field input:focus, .gallery-card__field select:focus {
+  outline: none; border-color: var(--accent);
+}
+.gallery-card__divider {
+  border: none; border-top: 1px solid var(--border); margin: 10px 0 10px;
+}
+.gallery-card__field input[type="datetime-local"] { cursor: pointer; }
+
+/* ── Position pad ── */
+.pos-pad {
+  position: relative; width: 100%; height: 68px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; cursor: crosshair; margin-top: 2px;
+  overflow: hidden; user-select: none;
+}
+.pos-pad:hover { border-color: #555; }
+.pos-pad__lines {
+  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.18;
+}
+.pos-pad__dot {
+  position: absolute; width: 12px; height: 12px;
+  background: var(--accent); border: 2px solid #fff;
+  border-radius: 50%; transform: translate(-50%, -50%);
+  pointer-events: none; box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  transition: transform 0.05s;
+}
+.pos-pad.active .pos-pad__dot { transform: translate(-50%, -50%) scale(1.3); }
+
+/* ── Zoom slider ── */
+.zoom-row { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+.zoom-slider {
+  flex: 1; height: 4px; cursor: pointer;
+  accent-color: var(--accent); border: none; outline: none;
+}
+.zoom-val { font-size: 0.65rem; color: var(--accent); white-space: nowrap; min-width: 28px; text-align: right; }
+
+.gallery-card__actions { display: flex; gap: 6px; padding: 0 12px 12px; }
+.gallery-card__actions .btn { font-size: 0.75rem; padding: 5px 10px; flex: 1; justify-content: center; }
+.gallery-card__badge {
+  position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #fff;
+  font-size: 0.65rem; padding: 2px 8px; border-radius: 3px; text-transform: uppercase;
+  letter-spacing: 0.05em; z-index: 1; pointer-events: none;
+}
+
+/* ── Preview with snap-grid reorder ── */
+.preview-frame {
+  background: #fafafa; border-radius: 8px; overflow: hidden; padding: 40px;
+}
+.preview-frame .pv-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+}
+.preview-frame .pv-slot {
+  border-radius: 4px; position: relative; min-height: 60px;
+  border: 2px dashed transparent; transition: border-color 0.15s, background 0.15s;
+}
+.preview-frame .pv-slot.empty-slot {
+  border-color: #ccc; background: #f5f5f5;
+}
+.preview-frame .pv-slot.drag-over-slot {
+  border-color: var(--accent); background: rgba(74, 158, 255, 0.08);
+}
+.preview-frame .pv-slot--tall { grid-row: span 2; }
+.preview-frame .pv-slot--wide { grid-column: span 2; }
+
+.preview-frame .pv-card {
+  position: relative; overflow: hidden; background: #f0f0f0;
+  aspect-ratio: 4/3; border-radius: 4px; cursor: grab;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06); transition: box-shadow 0.2s, transform 0.2s;
+}
+.preview-frame .pv-card:active { cursor: grabbing; }
+.preview-frame .pv-card.pv-dragging { opacity: 0.35; transform: scale(0.96); }
+.preview-frame .pv-slot--tall .pv-card { aspect-ratio: auto; height: 100%; }
+.preview-frame .pv-slot--wide .pv-card { aspect-ratio: auto; height: 100%; min-height: 200px; }
+.preview-frame .pv-card img {
+  width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;
+}
+.preview-frame .pv-card__overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%);
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 28px; opacity: 0; transition: opacity 0.35s; pointer-events: none;
+}
+.preview-frame .pv-card:hover .pv-card__overlay { opacity: 1; }
+.preview-frame .pv-card__overlay h3 {
+  font-family: var(--serif); font-size: 1.25rem; font-weight: 400;
+  color: #fff; margin-bottom: 4px;
+}
+.preview-frame .pv-card__overlay p {
+  font-size: 0.8125rem; color: rgba(255,255,255,0.7); font-weight: 300;
+}
+.preview-frame .pv-card__pos {
+  position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.55);
+  color: #fff; font-size: 0.65rem; padding: 2px 8px; border-radius: 3px;
+  pointer-events: none;
+}
+
+/* ── Export panel ── */
+.export-section { max-width: 700px; }
+.export-section h3 { font-size: 1rem; margin-bottom: 8px; }
+.export-section p { font-size: 0.875rem; color: var(--text2); margin-bottom: 20px; }
+.code-block {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.8rem;
+  color: var(--text2); overflow-x: auto; white-space: pre; max-height: 400px;
+  overflow-y: auto; margin-bottom: 20px; line-height: 1.6;
+}
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; padding: 12px 20px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 0.875rem; z-index: 999; opacity: 0; transform: translateY(10px);
+  transition: all 0.3s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: var(--success); }
+
+/* ── Save badge ── */
+.save-badge {
+  font-size: 0.7rem; color: var(--text2); padding: 4px 10px;
+  border: 1px solid var(--border); border-radius: 20px;
+  transition: all 0.3s; opacity: 0.5;
+}
+.save-badge.saving { color: var(--accent); border-color: var(--accent); opacity: 1; }
+.save-badge.saved { color: var(--success); border-color: var(--success); opacity: 1; }
+
+/* ── Empty state ── */
+.empty {
+  text-align: center; padding: 60px 20px; color: var(--text2);
+}
+.empty__icon { font-size: 2rem; opacity: 0.3; margin-bottom: 8px; }
+.empty p { font-size: 0.9rem; }
+
+/* ── Modal ── */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 900;
+  display: none; align-items: center; justify-content: center;
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 24px; max-width: 420px; width: 90%;
+}
+.modal h3 { margin-bottom: 8px; font-size: 1rem; }
+.modal p { font-size: 0.85rem; color: var(--text2); margin-bottom: 20px; }
+.modal__actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .preview-frame .pv-grid { grid-template-columns: 1fr; }
+  .preview-frame .pv-slot--tall { grid-row: span 1; }
+  .preview-frame .pv-slot--wide { grid-column: span 1; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app__header">
+    <div class="app__title">Portfolio Admin <span>— Ian Shultz Photography</span></div>
+    <div class="app__actions">
+      <span class="save-badge" id="saveBadge" title="Auto-saved to browser storage">Saved</span>
+      <button class="btn" id="btnClearAll">Clear All</button>
+      <button class="btn btn--success" id="btnExport">Export ZIP</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="upload">Upload</button>
+    <button class="tab" data-tab="manage">Manage (<span id="photoCount">0</span>)</button>
+    <button class="tab" data-tab="preview">Preview</button>
+    <button class="tab" data-tab="export">Export</button>
+  </div>
+
+  <!-- Upload Panel -->
+  <div class="panel active" id="panel-upload">
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone__icon">+</div>
+      <div class="dropzone__text">Drop images here or click to browse</div>
+      <div class="dropzone__sub">JPG, PNG accepted &mdash; images auto-compressed to web size</div>
+      <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.cr3,image/jpeg,image/png">
+    </div>
+    <div class="upload-queue" id="uploadQueue"></div>
+  </div>
+
+  <!-- Manage Panel -->
+  <div class="panel" id="panel-manage">
+    <div class="empty" id="manageEmpty">
+      <div class="empty__icon">&#128247;</div>
+      <p>No photos yet. Upload some images to get started.</p>
+    </div>
+    <div class="gallery-grid" id="galleryGrid"></div>
+  </div>
+
+  <!-- Preview Panel -->
+  <div class="panel" id="panel-preview">
+    <div class="empty" id="previewEmpty">
+      <div class="empty__icon">&#128065;</div>
+      <p>No photos to preview. Upload some images first.</p>
+    </div>
+    <div class="preview-frame" id="previewFrame" style="display:none;">
+      <p style="font-size:0.8rem;color:#999;margin-bottom:16px;">Drag photos to reorder. Drop onto any slot to swap positions.</p>
+      <div class="pv-grid" id="previewGrid"></div>
+    </div>
+  </div>
+
+  <!-- Export Panel -->
+  <div class="panel" id="panel-export">
+    <div class="export-section">
+      <h3>Generated Gallery HTML</h3>
+      <p>This is the HTML snippet to replace the contents of your <code>portfolio__grid</code> div in index.html.</p>
+      <div class="code-block" id="exportCode"><!-- Upload photos to generate HTML --></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px;">
+        <button class="btn btn--primary" id="btnCopyHtml">Copy HTML</button>
+        <button class="btn" id="btnDownloadTxt">Download .txt</button>
+        <button class="btn btn--success" id="btnDownloadZip">Download ZIP (images)</button>
+      </div>
+      <h3>Image Files</h3>
+      <p>The ZIP contains <code>Portfolio/web/</code> (1920px) and <code>Portfolio/thumbs/</code> (600px) folders. On Windows, use <strong>Save As dialog</strong> mode (Chrome/Edge) to avoid security warnings on extracted files. The <em>GitHub "too big to show"</em> message is a preview-only limit — files still upload fine.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div class="modal-bg" id="deleteModal">
+  <div class="modal">
+    <h3>Delete Photo</h3>
+    <p>Remove this photo from the gallery? This only affects the admin tool, not your deployed site.</p>
+    <div class="modal__actions">
+      <button class="btn" id="btnCancelDelete">Cancel</button>
+      <button class="btn btn--danger" id="btnConfirmDelete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Portfolio Admin Tool — Offline, single-file, no dependencies
+   ============================================================ */
+(() => {
+  'use strict';
+
+  // ── DOM refs (defined first so everything below can use them) ──
+  const $ = (sel, ctx = document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
+
+  const dropzone = $('#dropzone');
+  const fileInput = $('#fileInput');
+  const uploadQueue = $('#uploadQueue');
+  const galleryGrid = $('#galleryGrid');
+  const previewGrid = $('#previewGrid');
+  const previewFrame = $('#previewFrame');
+  const previewEmpty = $('#previewEmpty');
+  const manageEmpty = $('#manageEmpty');
+  const exportCode = $('#exportCode');
+  const photoCount = $('#photoCount');
+  const toast = $('#toast');
+  const deleteModal = $('#deleteModal');
+  const saveBadge = $('#saveBadge');
+
+  // ── State ──
+  let photos = [];
+  let nextId = 1;
+  let deleteTarget = null;
+  let activePad = null; // tracks the currently-dragged position pad
+
+  // ── Helpers (defined early — used by IndexedDB load and everywhere else) ──
+  function escHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+  function updateCount() {
+    photoCount.textContent = photos.length;
+  }
+  function showToast(msg, type) {
+    toast.textContent = msg;
+    toast.className = 'toast show' + (type ? ' ' + type : '');
+    setTimeout(() => { toast.className = 'toast'; }, 2500);
+  }
+
+  // ── Image processing via Canvas ──
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to load image')); };
+      img.src = url;
+    });
+  }
+
+  function resizeToBlob(img, maxWidth, quality) {
+    return new Promise(resolve => {
+      const scale = Math.min(1, maxWidth / img.naturalWidth);
+      const w = Math.round(img.naturalWidth * scale);
+      const h = Math.round(img.naturalHeight * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg', quality);
+    });
+  }
+
+  function blobToDataUrl(blob) {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function sanitizeFileName(name) {
+    return name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9_\- ]/g, '') + '.jpg';
+  }
+
+  // ── IndexedDB persistence ──
+  const DB_NAME = 'ShultzPortfolioAdmin';
+  const DB_VERSION = 1;
+  const STORE = 'photos';
+  let db = null;
+
+  function openDb() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = () => {
+        const d = req.result;
+        if (!d.objectStoreNames.contains(STORE)) {
+          d.createObjectStore(STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = () => { db = req.result; resolve(db); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function saveAllPhotos() {
+    if (!db) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      const store = tx.objectStore(STORE);
+      store.clear();
+      photos.forEach((photo, i) => {
+        store.put({
+          id: photo.id, sortIndex: i,
+          fileName: photo.fileName, title: photo.title,
+          location: photo.location, alt: photo.alt, layout: photo.layout,
+          photoDate: photo.photoDate, era: photo.era,
+          posX: photo.posX, posY: photo.posY, zoom: photo.zoom,
+          webBlob: photo.webBlob, thumbBlob: photo.thumbBlob
+        });
+      });
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  function loadPhotos() {
+    if (!db) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const store = tx.objectStore(STORE);
+      const req = store.getAll();
+      req.onsuccess = async () => {
+        const records = req.result.sort((a, b) => a.sortIndex - b.sortIndex);
+        for (const rec of records) {
+          if (!rec.webBlob || !rec.thumbBlob) continue; // skip any corrupt record
+          const webDataUrl = await blobToDataUrl(rec.webBlob);
+          const thumbDataUrl = await blobToDataUrl(rec.thumbBlob);
+          photos.push({
+            id: rec.id, fileName: rec.fileName,
+            title: rec.title, location: rec.location,
+            alt: rec.alt, layout: rec.layout,
+            photoDate: rec.photoDate || '', era: rec.era || '',
+            posX: rec.posX != null ? rec.posX : 50,
+            posY: rec.posY != null ? rec.posY : 50,
+            zoom: rec.zoom != null ? rec.zoom : 1,
+            webBlob: rec.webBlob, thumbBlob: rec.thumbBlob,
+            webDataUrl, thumbDataUrl
+          });
+          if (rec.id >= nextId) nextId = rec.id + 1;
+        }
+        resolve();
+      };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  // Debounced auto-save
+  let saveTimer = null;
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveBadge.textContent = 'Saving...';
+    saveBadge.className = 'save-badge saving';
+    saveTimer = setTimeout(() => {
+      saveAllPhotos().then(() => {
+        saveBadge.textContent = 'Saved';
+        saveBadge.className = 'save-badge saved';
+        setTimeout(() => { saveBadge.className = 'save-badge'; }, 2000);
+      }).catch(err => {
+        console.warn('Auto-save failed:', err);
+        saveBadge.textContent = 'Save failed';
+        saveBadge.className = 'save-badge';
+      });
+    }, 300);
+  }
+
+  // ── Global position-pad mouse handlers ──
+  // (registered once here; mousedown per-card sets activePad)
+  document.addEventListener('mousemove', e => {
+    if (!activePad) return;
+    const rect = activePad.pad.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width)  * 100));
+    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top)  / rect.height) * 100));
+    const p = photos.find(q => q.id === activePad.photoId);
+    if (!p) return;
+    p.posX = Math.round(x); p.posY = Math.round(y);
+    activePad.dot.style.left = p.posX + '%';
+    activePad.dot.style.top  = p.posY + '%';
+    const imgEl = activePad.card.querySelector('.gallery-card__img');
+    if (imgEl) {
+      imgEl.style.objectPosition = `${p.posX}% ${p.posY}%`;
+      imgEl.style.transformOrigin = `${p.posX}% ${p.posY}%`;
+    }
+  });
+  document.addEventListener('mouseup', () => {
+    if (!activePad) return;
+    activePad.pad.classList.remove('active');
+    activePad = null;
+    scheduleSave();
+  });
+
+  // ── Tabs ──
+  $$('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      $$('.tab').forEach(t => t.classList.remove('active'));
+      $$('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      $(`#panel-${tab.dataset.tab}`).classList.add('active');
+      if (tab.dataset.tab === 'preview') renderPreview();
+      if (tab.dataset.tab === 'export') renderExport();
+      if (tab.dataset.tab === 'manage') renderGallery();
+    });
+  });
+
+  // ── File handling ──
+  async function processFiles(fileList) {
+    const files = [...fileList].filter(f => /\.(jpe?g|png|cr3)$/i.test(f.name));
+    if (!files.length) { showToast('No supported image files found'); return; }
+
+    for (const file of files) {
+      const id = nextId++;
+      const cleanName = sanitizeFileName(file.name);
+
+      const queueItem = document.createElement('div');
+      queueItem.className = 'upload-item';
+      queueItem.innerHTML = `
+        <img class="upload-item__thumb" src="" alt="">
+        <div class="upload-item__info">
+          <div class="upload-item__name">${escHtml(file.name)}</div>
+          <div class="upload-item__size">${formatSize(file.size)}</div>
+          <div class="upload-item__progress"><div class="upload-item__bar"></div></div>
+        </div>
+        <div class="upload-item__status">Processing...</div>
+      `;
+      uploadQueue.prepend(queueItem);
+
+      try {
+        const bar = $('.upload-item__bar', queueItem);
+        const status = $('.upload-item__status', queueItem);
+        const thumbEl = $('.upload-item__thumb', queueItem);
+
+        bar.style.width = '20%';
+        const img = await loadImage(file);
+
+        bar.style.width = '50%';
+        status.textContent = 'Compressing...';
+        const webBlob = await resizeToBlob(img, 1920, 0.82);
+
+        bar.style.width = '75%';
+        const thumbBlob = await resizeToBlob(img, 600, 0.78);
+
+        bar.style.width = '90%';
+        status.textContent = 'Encoding...';
+        const webDataUrl = await blobToDataUrl(webBlob);
+        const thumbDataUrl = await blobToDataUrl(thumbBlob);
+
+        thumbEl.src = thumbDataUrl;
+        bar.style.width = '100%';
+        status.textContent = `Done (${formatSize(webBlob.size)})`;
+        status.style.color = 'var(--success)';
+
+        photos.push({
+          id, fileName: cleanName,
+          title: cleanName.replace('.jpg', '').replace(/[-_]/g, ' '),
+          location: '', alt: '', layout: 'normal',
+          photoDate: '', era: '',
+          posX: 50, posY: 50, zoom: 1,
+          webBlob, thumbBlob, webDataUrl, thumbDataUrl
+        });
+        updateCount();
+        scheduleSave();
+      } catch (err) {
+        const status = $('.upload-item__status', queueItem);
+        status.textContent = 'Failed';
+        status.style.color = 'var(--danger)';
+      }
+    }
+    showToast(`${files.length} image(s) processed`, 'success');
+  }
+
+  // ── Dropzone events ──
+  dropzone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => { processFiles(fileInput.files); fileInput.value = ''; });
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault(); dropzone.classList.remove('dragover');
+    processFiles(e.dataTransfer.files);
+  });
+
+  // ══════════════════════════════════════════════
+  //  MANAGE PAGE — drag only from image handle
+  // ══════════════════════════════════════════════
+  let manageDragIdx = null;
+
+  function renderGallery() {
+    galleryGrid.innerHTML = '';
+    manageEmpty.style.display = photos.length ? 'none' : 'block';
+
+    photos.forEach((photo, idx) => {
+      const card = document.createElement('div');
+      card.className = 'gallery-card';
+      card.dataset.index = idx;
+
+      const layoutLabel = { normal: '', tall: 'Tall', wide: 'Wide' }[photo.layout] || '';
+
+      card.innerHTML = `
+        ${layoutLabel ? `<div class="gallery-card__badge">${layoutLabel}</div>` : ''}
+        <div class="gallery-card__drag-handle" draggable="true">
+          <img class="gallery-card__img" src="${photo.thumbDataUrl}" alt="${escHtml(photo.alt)}" style="object-position:${photo.posX}% ${photo.posY}%;transform:scale(${photo.zoom});transform-origin:${photo.posX}% ${photo.posY}%">
+          <div class="gallery-card__drag-hint">Drag to reorder</div>
+        </div>
+        <div class="gallery-card__body">
+          <div class="gallery-card__field">
+            <label>Title / Species</label>
+            <input type="text" value="${escHtml(photo.title)}" data-field="title" data-id="${photo.id}">
+          </div>
+          <div class="gallery-card__field">
+            <label>Location</label>
+            <input type="text" value="${escHtml(photo.location)}" placeholder="e.g. Juanita Bay, WA" data-field="location" data-id="${photo.id}">
+          </div>
+          <div class="gallery-card__field">
+            <label>Alt Text</label>
+            <input type="text" value="${escHtml(photo.alt)}" placeholder="Describe the image" data-field="alt" data-id="${photo.id}">
+          </div>
+          <div class="gallery-card__field">
+            <label>Layout</label>
+            <select data-field="layout" data-id="${photo.id}">
+              <option value="normal" ${photo.layout === 'normal' ? 'selected' : ''}>Normal</option>
+              <option value="tall" ${photo.layout === 'tall' ? 'selected' : ''}>Tall (span 2 rows)</option>
+              <option value="wide" ${photo.layout === 'wide' ? 'selected' : ''}>Wide (span 2 cols)</option>
+            </select>
+          </div>
+          <div class="gallery-card__divider"></div>
+          <div class="gallery-card__field">
+            <label>Date Taken</label>
+            <input type="datetime-local" value="${escHtml(photo.photoDate)}" data-field="photoDate" data-id="${photo.id}">
+          </div>
+          <div class="gallery-card__field">
+            <label>Era / Trip</label>
+            <input type="text" value="${escHtml(photo.era)}" placeholder="e.g. Pacific Coast 2024" data-field="era" data-id="${photo.id}">
+          </div>
+          <div class="gallery-card__field">
+            <label>Framing Position</label>
+            <p style="font-size:0.65rem;color:var(--text2);margin:2px 0 4px;">Click or drag the dot to shift which part of the image shows inside the frame.</p>
+            <div class="pos-pad" data-id="${photo.id}">
+              <svg class="pos-pad__lines" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="50" y1="0" x2="50" y2="100" stroke="white" stroke-width="1.5"/>
+                <line x1="0" y1="50" x2="100" y2="50" stroke="white" stroke-width="1.5"/>
+              </svg>
+              <div class="pos-pad__dot" style="left:${photo.posX}%;top:${photo.posY}%"></div>
+            </div>
+          </div>
+          <div class="gallery-card__field">
+            <label>Zoom <span class="zoom-val">${photo.zoom.toFixed(1)}×</span></label>
+            <div class="zoom-row">
+              <input type="range" class="zoom-slider" min="100" max="300" step="5" value="${Math.round(photo.zoom * 100)}" data-id="${photo.id}">
+            </div>
+          </div>
+        </div>
+        <div class="gallery-card__actions">
+          <button class="btn btn--primary" data-export="${photo.id}">Export</button>
+          <button class="btn btn--danger" data-delete="${photo.id}">Delete</button>
+        </div>
+      `;
+
+      // Field edits — text is fully selectable, no drag interference
+      $$('input, select', card).forEach(input => {
+        input.addEventListener('change', () => {
+          const p = photos.find(x => x.id === Number(input.dataset.id));
+          if (p) { p[input.dataset.field] = input.value; scheduleSave(); }
+        });
+      });
+
+      // Export single photo
+      $('[data-export]', card).addEventListener('click', () => exportSinglePhoto(photo.id));
+
+      // Delete
+      $('[data-delete]', card).addEventListener('click', () => {
+        deleteTarget = photo.id;
+        deleteModal.classList.add('show');
+      });
+
+      // Position pad — mousedown starts tracking; global mousemove/mouseup handle the rest
+      const pad = $('.pos-pad', card);
+      if (pad) {
+        const padDot = $('.pos-pad__dot', pad);
+        pad.addEventListener('mousedown', e => {
+          e.preventDefault();
+          pad.classList.add('active');
+          activePad = { pad, dot: padDot, card, photoId: photo.id };
+          // Apply immediately on click (don't require drag)
+          const rect = pad.getBoundingClientRect();
+          const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width)  * 100));
+          const y = Math.max(0, Math.min(100, ((e.clientY - rect.top)  / rect.height) * 100));
+          const p = photos.find(q => q.id === photo.id);
+          if (p) {
+            p.posX = Math.round(x); p.posY = Math.round(y);
+            padDot.style.left = p.posX + '%';
+            padDot.style.top  = p.posY + '%';
+            const imgEl = card.querySelector('.gallery-card__img');
+            if (imgEl) {
+              imgEl.style.objectPosition = `${p.posX}% ${p.posY}%`;
+              imgEl.style.transformOrigin = `${p.posX}% ${p.posY}%`;
+            }
+          }
+        });
+      }
+
+      // Zoom slider — real-time update, save on release
+      const zoomSlider = card.querySelector('.zoom-slider');
+      const zoomValLabel = card.querySelector('.zoom-val');
+      if (zoomSlider) {
+        zoomSlider.addEventListener('input', () => {
+          const p = photos.find(q => q.id === photo.id);
+          if (!p) return;
+          p.zoom = zoomSlider.value / 100;
+          zoomValLabel.textContent = p.zoom.toFixed(1) + '×';
+          const imgEl = card.querySelector('.gallery-card__img');
+          if (imgEl) {
+            imgEl.style.transform = `scale(${p.zoom})`;
+            imgEl.style.transformOrigin = `${p.posX}% ${p.posY}%`;
+          }
+        });
+        zoomSlider.addEventListener('change', scheduleSave);
+      }
+
+      // Drag — only from the image handle, not the whole card
+      const handle = $('.gallery-card__drag-handle', card);
+      handle.addEventListener('dragstart', e => {
+        manageDragIdx = idx;
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setDragImage(card, 40, 40);
+      });
+      handle.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        $$('.gallery-card').forEach(c => c.classList.remove('drag-over'));
+        manageDragIdx = null;
+      });
+
+      // Drop target is the whole card
+      card.addEventListener('dragover', e => {
+        if (manageDragIdx === null) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        card.classList.add('drag-over');
+      });
+      card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+      card.addEventListener('drop', e => {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        const targetIdx = Number(card.dataset.index);
+        if (manageDragIdx !== null && manageDragIdx !== targetIdx) {
+          const moved = photos.splice(manageDragIdx, 1)[0];
+          photos.splice(targetIdx, 0, moved);
+          renderGallery();
+          scheduleSave();
+          showToast('Photo reordered', 'success');
+        }
+        manageDragIdx = null;
+      });
+
+      galleryGrid.appendChild(card);
+    });
+  }
+
+  // ── Delete modal ──
+  $('#btnCancelDelete').addEventListener('click', () => {
+    deleteModal.classList.remove('show');
+    deleteTarget = null;
+  });
+  $('#btnConfirmDelete').addEventListener('click', () => {
+    if (deleteTarget !== null) {
+      photos = photos.filter(p => p.id !== deleteTarget);
+      deleteTarget = null;
+      deleteModal.classList.remove('show');
+      updateCount();
+      renderGallery();
+      scheduleSave();
+      showToast('Photo removed');
+    }
+  });
+
+  // ── Clear all ──
+  $('#btnClearAll').addEventListener('click', () => {
+    if (!photos.length) return;
+    if (confirm('Remove all photos from the admin tool?')) {
+      photos = [];
+      uploadQueue.innerHTML = '';
+      updateCount();
+      renderGallery();
+      scheduleSave();
+      showToast('All photos cleared');
+    }
+  });
+
+  // ══════════════════════════════════════════════
+  //  PREVIEW PAGE — snap-to-slot drag reorder
+  // ══════════════════════════════════════════════
+  let pvDragIdx = null;
+
+  function renderPreview() {
+    previewGrid.innerHTML = '';
+    previewEmpty.style.display = photos.length ? 'none' : 'block';
+    previewFrame.style.display = photos.length ? 'block' : 'none';
+
+    photos.forEach((photo, idx) => {
+      const layoutMod = photo.layout === 'tall' ? ' pv-slot--tall'
+                      : photo.layout === 'wide' ? ' pv-slot--wide' : '';
+
+      // Slot = the grid cell that acts as a drop target
+      const slot = document.createElement('div');
+      slot.className = `pv-slot${layoutMod}`;
+      slot.dataset.index = idx;
+
+      // Card = the draggable photo inside the slot
+      const card = document.createElement('div');
+      card.className = 'pv-card';
+      card.draggable = true;
+      card.dataset.index = idx;
+      const pvImgStyle = `object-position:${photo.posX}% ${photo.posY}%;transform:scale(${photo.zoom});transform-origin:${photo.posX}% ${photo.posY}%`;
+      card.innerHTML = `
+        <img src="${photo.webDataUrl}" alt="${escHtml(photo.alt)}" style="${pvImgStyle}">
+        <div class="pv-card__overlay">
+          <h3>${escHtml(photo.title)}</h3>
+          <p>${escHtml(photo.location)}</p>
+        </div>
+        <div class="pv-card__pos">${idx + 1}</div>
+      `;
+
+      // Drag from card
+      card.addEventListener('dragstart', e => {
+        pvDragIdx = idx;
+        card.classList.add('pv-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('pv-dragging');
+        $$('.pv-slot', previewGrid).forEach(s => s.classList.remove('drag-over-slot'));
+        pvDragIdx = null;
+      });
+
+      slot.appendChild(card);
+
+      // Drop target is the slot
+      slot.addEventListener('dragover', e => {
+        if (pvDragIdx === null) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        slot.classList.add('drag-over-slot');
+      });
+      slot.addEventListener('dragleave', () => slot.classList.remove('drag-over-slot'));
+      slot.addEventListener('drop', e => {
+        e.preventDefault();
+        slot.classList.remove('drag-over-slot');
+        const targetIdx = Number(slot.dataset.index);
+        if (pvDragIdx !== null && pvDragIdx !== targetIdx) {
+          // Swap positions for intuitive grid reorder
+          const moved = photos.splice(pvDragIdx, 1)[0];
+          photos.splice(targetIdx, 0, moved);
+          renderPreview();
+          scheduleSave();
+          showToast('Photo reordered', 'success');
+        }
+        pvDragIdx = null;
+      });
+
+      previewGrid.appendChild(slot);
+    });
+  }
+
+  // ── Auto-scroll when dragging near viewport edges (Manage + Preview) ──
+  let dragScrollTimer = null;
+  function stopDragScroll() {
+    if (dragScrollTimer) { clearInterval(dragScrollTimer); dragScrollTimer = null; }
+  }
+  document.addEventListener('dragover', e => {
+    if (pvDragIdx === null && manageDragIdx === null) { stopDragScroll(); return; }
+    const edge = 80;
+    const speed = 12;
+    stopDragScroll(); // clear previous direction before starting new one
+    if (e.clientY < edge) {
+      dragScrollTimer = setInterval(() => window.scrollBy(0, -speed), 16);
+    } else if (e.clientY > window.innerHeight - edge) {
+      dragScrollTimer = setInterval(() => window.scrollBy(0,  speed), 16);
+    }
+  });
+  document.addEventListener('dragend', stopDragScroll);
+
+  // ── Export HTML generation ──
+  function generateHtml() {
+    if (!photos.length) return '<!-- No photos -->';
+    return photos.map(photo => {
+      const layoutClass = photo.layout === 'tall' ? ' portfolio__item--tall'
+                        : photo.layout === 'wide' ? ' portfolio__item--wide' : '';
+      const hasPos  = photo.posX !== 50 || photo.posY !== 50;
+      const hasZoom = photo.zoom !== 1;
+      let inlineStyle = '';
+      if (hasPos || hasZoom) {
+        const parts = [];
+        if (hasPos)  parts.push(`--img-pos:${photo.posX}% ${photo.posY}%`);
+        if (hasZoom) parts.push(`--img-zoom:${photo.zoom}`);
+        if (hasZoom && hasPos) parts.push(`--img-origin:${photo.posX}% ${photo.posY}%`);
+        inlineStyle = ` style="${parts.join(';')}"`;
+      }
+      return `        <div class="portfolio__item${layoutClass}">
+          <div class="portfolio__image-wrap">
+            <img src="Portfolio/web/${photo.fileName}" alt="${escHtml(photo.alt)}" loading="lazy"${inlineStyle}>
+            <div class="portfolio__overlay">
+              <h3>${escHtml(photo.title)}</h3>
+              <p>${escHtml(photo.location)}</p>
+            </div>
+          </div>
+        </div>`;
+    }).join('\n\n');
+  }
+
+  function renderExport() {
+    exportCode.textContent = generateHtml();
+  }
+
+  // ── Shared file-save helper ──
+  // Uses File System Access API (Save dialog → no Windows zone-block) when available,
+  // falls back to anchor-click download otherwise.
+  async function saveToDisk(blob, suggestedName, mimeType, ext) {
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName,
+          types: [{ description: ext.toUpperCase().replace('.','') + ' file', accept: { [mimeType]: [ext] } }]
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return; // user cancelled
+        // fall through to anchor method
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = suggestedName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  // ── Copy HTML ──
+  $('#btnCopyHtml').addEventListener('click', () => {
+    navigator.clipboard.writeText(generateHtml()).then(() => {
+      showToast('HTML copied to clipboard', 'success');
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = generateHtml();
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('HTML copied to clipboard', 'success');
+    });
+  });
+
+  // ── Download snippet as .txt ──
+  $('#btnDownloadTxt').addEventListener('click', () => {
+    if (!photos.length) { showToast('No photos to export'); return; }
+    const blob = new Blob([generateHtml()], { type: 'text/plain' });
+    saveToDisk(blob, 'gallery-snippet.txt', 'text/plain', '.txt')
+      .then(() => showToast('Snippet downloaded', 'success'));
+  });
+
+  // ── ZIP generation (pure JS, no dependencies) ──
+  const ZipWriter = {
+    _files: [],
+    reset() { this._files = []; },
+    add(name, blob) {
+      return blob.arrayBuffer().then(buf => {
+        this._files.push({ name, data: new Uint8Array(buf) });
+      });
+    },
+    generate() {
+      const files = this._files;
+      const centralDir = [];
+      const fileEntries = [];
+      let offset = 0;
+
+      for (const file of files) {
+        const nameBytes = new TextEncoder().encode(file.name);
+        const crc = crc32(file.data);
+        const size = file.data.length;
+
+        const localHeader = new Uint8Array(30 + nameBytes.length);
+        const lv = new DataView(localHeader.buffer);
+        lv.setUint32(0, 0x04034b50, true);
+        lv.setUint16(4, 20, true);
+        lv.setUint16(6, 0, true);
+        lv.setUint16(8, 0, true);
+        lv.setUint16(10, 0, true);
+        lv.setUint16(12, 0, true);
+        lv.setUint32(14, crc, true);
+        lv.setUint32(18, size, true);
+        lv.setUint32(22, size, true);
+        lv.setUint16(26, nameBytes.length, true);
+        lv.setUint16(28, 0, true);
+        localHeader.set(nameBytes, 30);
+        fileEntries.push(localHeader, file.data);
+
+        const cdEntry = new Uint8Array(46 + nameBytes.length);
+        const cv = new DataView(cdEntry.buffer);
+        cv.setUint32(0, 0x02014b50, true);
+        cv.setUint16(4, 20, true);
+        cv.setUint16(6, 20, true);
+        cv.setUint16(8, 0, true);
+        cv.setUint16(10, 0, true);
+        cv.setUint16(12, 0, true);
+        cv.setUint16(14, 0, true);
+        cv.setUint32(16, crc, true);
+        cv.setUint32(20, size, true);
+        cv.setUint32(24, size, true);
+        cv.setUint16(28, nameBytes.length, true);
+        cv.setUint16(30, 0, true);
+        cv.setUint16(32, 0, true);
+        cv.setUint16(34, 0, true);
+        cv.setUint16(36, 0, true);
+        cv.setUint32(38, 0x20, true);
+        cv.setUint32(42, offset, true);
+        cdEntry.set(nameBytes, 46);
+        centralDir.push(cdEntry);
+
+        offset += 30 + nameBytes.length + size;
+      }
+
+      const cdSize = centralDir.reduce((a, b) => a + b.length, 0);
+      const eocd = new Uint8Array(22);
+      const ev = new DataView(eocd.buffer);
+      ev.setUint32(0, 0x06054b50, true);
+      ev.setUint16(4, 0, true);
+      ev.setUint16(6, 0, true);
+      ev.setUint16(8, files.length, true);
+      ev.setUint16(10, files.length, true);
+      ev.setUint32(12, cdSize, true);
+      ev.setUint32(16, offset, true);
+      ev.setUint16(20, 0, true);
+      return new Blob([...fileEntries, ...centralDir, eocd], { type: 'application/zip' });
+    }
+  };
+
+  const crcTable = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    crcTable[i] = c;
+  }
+  function crc32(data) {
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < data.length; i++) crc = crcTable[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  async function exportSinglePhoto(photoId) {
+    const photo = photos.find(p => p.id === photoId);
+    if (!photo) return;
+    if (!photo.webBlob || !photo.thumbBlob) { showToast('Image data missing'); return; }
+    showToast('Building ZIP...');
+    ZipWriter.reset();
+    await ZipWriter.add(`Portfolio/web/${photo.fileName}`, photo.webBlob);
+    await ZipWriter.add(`Portfolio/thumbs/${photo.fileName}`, photo.thumbBlob);
+
+    // Generate HTML snippet for this photo only
+    const layoutClass = photo.layout === 'tall' ? ' portfolio__item--tall'
+                      : photo.layout === 'wide' ? ' portfolio__item--wide' : '';
+    const hasPos  = photo.posX !== 50 || photo.posY !== 50;
+    const hasZoom = photo.zoom !== 1;
+    let inlineStyle = '';
+    if (hasPos || hasZoom) {
+      const parts = [];
+      if (hasPos)  parts.push(`--img-pos:${photo.posX}% ${photo.posY}%`);
+      if (hasZoom) parts.push(`--img-zoom:${photo.zoom}`);
+      if (hasZoom && hasPos) parts.push(`--img-origin:${photo.posX}% ${photo.posY}%`);
+      inlineStyle = ` style="${parts.join(';')}"`;
+    }
+    const snippet = `        <div class="portfolio__item${layoutClass}">\n          <div class="portfolio__image-wrap">\n            <img src="Portfolio/web/${photo.fileName}" alt="${escHtml(photo.alt)}" loading="lazy"${inlineStyle}>\n            <div class="portfolio__overlay">\n              <h3>${escHtml(photo.title)}</h3>\n              <p>${escHtml(photo.location)}</p>\n            </div>\n          </div>\n        </div>`;
+    await ZipWriter.add('gallery-snippet.txt', new Blob([snippet], { type: 'text/plain' }));
+
+    const zip = ZipWriter.generate();
+    const safeName = photo.fileName.replace('.jpg', '');
+    await saveToDisk(zip, `photo-export-${safeName}.zip`, 'application/zip', '.zip');
+    showToast('Photo exported!', 'success');
+  }
+
+  async function downloadZip() {
+    if (!photos.length) { showToast('No photos to export'); return; }
+    showToast('Building ZIP...');
+    ZipWriter.reset();
+
+    for (const photo of photos) {
+      if (!photo.webBlob || !photo.thumbBlob) {
+        console.warn('Skipping photo with missing blob:', photo.fileName);
+        continue;
+      }
+      await ZipWriter.add(`Portfolio/web/${photo.fileName}`, photo.webBlob);
+      await ZipWriter.add(`Portfolio/thumbs/${photo.fileName}`, photo.thumbBlob);
+    }
+
+    // Also include the HTML snippet as a .txt so it's ready to paste
+    await ZipWriter.add('gallery-snippet.txt', new Blob([generateHtml()], { type: 'text/plain' }));
+
+    const zip = ZipWriter.generate();
+    const name = `portfolio-export-${new Date().toISOString().slice(0,10)}.zip`;
+    await saveToDisk(zip, name, 'application/zip', '.zip');
+    showToast('ZIP saved!', 'success');
+  }
+
+  $('#btnExport').addEventListener('click', downloadZip);
+  $('#btnDownloadZip').addEventListener('click', downloadZip);
+
+  // ── Init: open DB, load saved photos, then render ──
+  openDb().then(() => loadPhotos()).then(() => {
+    updateCount();
+    renderGallery();
+    if (photos.length) showToast(`Loaded ${photos.length} saved photo(s)`, 'success');
+  }).catch(err => {
+    console.warn('IndexedDB load failed:', err);
+    renderGallery();
+  });
+})();
+</script>
+</body>
+</html>
